@@ -1,0 +1,145 @@
+scalar Date
+scalar Time
+
+type Event {
+    id: String
+    createdAt: Date
+    updatedAt: Date
+    userId: String
+    sportId: String
+    maxPpl: Int
+    date: String
+    time: String
+    isOpen: Boolean
+    isPaid: Boolean
+    usersRequestingToJoin: [InternalUserType]
+    orgUserId: String
+    organizationId: String
+    EventAdditions: EventAdditions
+    location: Location
+    createdBy: InternalUserType
+    sport: Sport
+    User: [InternalUserType]
+    numVisited: Int
+    Organization: InternalUserType
+    hasFinished: Boolean
+}
+
+type Notification {
+    id: String
+    createdAt: Date
+    userAwaiting: InternalUserType
+    eventForUser: Event
+}
+
+type CreatedEvent {
+    id: String
+}
+
+type InternalUserType {
+    id: String
+    createdAt: Date
+    updatedAt: Date
+    isVerified: Boolean
+    email: String
+    name: String
+    bio: String
+    profileName: String
+    userPhoto: String
+    role: String
+    organizationId: String
+    eventId: String
+}
+
+type EventAdditions {
+    description: String
+    nameOfTheEvent: String
+    eventCoverPhoto: String
+}
+
+type Sport {
+    id: String!
+    name: String!
+}
+
+type NewSBRequestObject {
+    id: String!
+    name: String!
+    userPhoto: String
+}
+
+input EventToJoinInput {
+    id: String
+}
+
+input CreateSportInput {
+    id: String!
+    name: String
+}
+
+input CreateEventDetailsInput {
+    description: String
+    nameOfTheEvent: String
+    eventCoverPhoto: String
+}
+
+input CreateLocationInput {
+    id: String
+    name: String
+    latitude: String
+    longitude: String
+}
+
+type Location {
+    id: String
+    name: String
+    latitude: String
+    longitude: String
+}
+
+input CreateEventInput {
+    eventDetails: CreateEventDetailsInput!
+    sport: CreateSportInput!
+    maxPpl: Int!
+    date: String!
+    time: String!
+    isOpen: Boolean!
+    isPaid: Boolean!
+    location: CreateLocationInput
+    createdBy: String
+}
+
+type Message {
+    createdAt: Date
+    text: String
+    sentBy: InternalUserType
+}
+
+input UpdateEventInput {
+    id: Int!
+}
+
+type Subscription {
+    newSBRequest: NewSBRequestObject!
+}
+
+type Query {
+    events(longitude: Float, latitude: Float): [Event]!
+    orgEvents: [Event]
+    event(id: String!): Event
+    notifs: [Notification]
+    sports: [Sport]!
+    locations: [Location]!
+    location(locationId: String!): Location
+    eventsUserParticipatesIn: [Event]
+    getMessagesOfEvent(eventId: String!): [Message]
+}
+
+type Mutation {
+    createEvent(createEventInput: CreateEventInput!, clubId: String): Event
+    updateEvent(updateEventInput: UpdateEventInput!): Event!
+    requestJoinSB(eventToJoinInput: EventToJoinInput): NewSBRequestObject!
+    removeEvent(id: Int!): Event
+    setVisitedEvent(id: String!): Event
+    disconnectNotif(id: String!): [Notification]
+}

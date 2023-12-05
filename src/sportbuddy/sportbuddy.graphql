@@ -1,0 +1,205 @@
+type Sportbuddy {
+    acces_token: String!
+    refresh_token: String!
+}
+
+type SportBuddyResponse {
+    id: String!
+}
+
+input CreateSportbuddyInput {
+    email: String!
+    password: String!
+    name: String!
+    profileName: String!
+    userPhoto: String
+    isOrg: Boolean
+    rating: Float
+}
+
+input LoginSportsBuddyInput {
+    email: String!
+    password: String!
+}
+
+input LogoutSportsBuddyInput {
+    id: String!
+}
+
+input UpdateSportbuddyInput {
+    email: String
+    name: String
+    profileName: String
+    organization: UpdateOrg
+    bio: String
+    website: String
+    igTag: String
+    ytTag: String
+    interests: [UpdateSport]
+}
+
+type UpdatedSportsBuddy {
+    id: String!
+    email: String!
+    name: String!
+    profileName: String!
+    organization: UpdatedOrg
+    bio: String!
+    website: String
+    igTag: String
+    ytTag: String
+    interests: [UpdatedSport]
+    followedBy: [UpdatedSportsBuddy]
+    following: [UpdatedSportsBuddy]
+    events: [EventsOfUser]
+    socketId: String
+    oldSocketId: String
+    clubs: [Club]
+    role: String
+    usersOrganization: UpdatedSportsBuddy
+}
+
+type GetCertainUser {
+    id: String!
+    email: String!
+    name: String!
+    profileName: String!
+    organization: UpdatedOrg
+    bio: String!
+    website: String!
+    igTag: String!
+    ytTag: String!
+    interests: [UpdatedSport]
+    followedBy: [UpdatedSportsBuddy]
+    following: [UpdatedSportsBuddy]
+    Event: [EventsOfUser]
+    socketId: String
+    oldSocketId: String
+    role: String
+}
+
+type SportOrg {
+    id: String!
+    email: String!
+    name: String!
+    profileName: String!
+    bio: String!
+    orgCreatedEvent: [EventsOfUser]
+    Users: [UpdatedSportsBuddy]
+}
+
+type EventsOfUser {
+    id: String
+    createdAt: Date
+    updatedAt: Date
+    userId: String
+    sportId: String
+    maxPpl: Int
+    time: String
+    date: String
+    isOpen: Boolean
+    isPaid: Boolean
+    usersRequestingToJoin: [UpdatedSportsBuddy]
+    orgUserId: String
+    organizationId: String
+    EventAdditions: EventDetails
+    location: EventLoc
+    socketId: String
+    oldSocketId: String
+}
+type EventDetails {
+    description: String
+    nameOfTheEvent: String
+    eventCoverPhoto: String
+}
+
+type EventLoc {
+    id: String
+    name: String
+    latitude: String
+    longitude: String
+}
+
+type SearchFieldsResult {
+    id: String
+    name: String
+    profileName: String
+}
+
+type SearchFieldsResultObject {
+    users: [SearchFieldsResult]
+    orgs: [SearchFieldsResult]
+}
+
+type UpdatedOrg {
+    id: String
+    profileName: String
+}
+
+input UpdateOrg {
+    id: String
+    name: String
+}
+
+type UpdatedSport {
+    id: String!
+    name: String!
+}
+
+input UpdateSport {
+    id: String!
+    name: String
+}
+
+type Club {
+    id: String!
+    name: String!
+    desc: String
+    clubCoverPhoto: String
+    events: [EventsOfUser]
+    organization: UpdatedSportsBuddy
+    users: [GetCertainUser]
+}
+
+type CreatedClub {
+    id: String!
+    name: String!
+    desc: String
+    clubCoverPhoto: String
+}
+
+input CreateClubInput {
+    name: String!
+    desc: String
+    clubCoverPhoto: String
+}
+
+type Query {
+    sportbuddys: [UpdatedSportsBuddy]!
+    sportbuddy: UpdatedSportsBuddy
+    getUser(user: String!): GetCertainUser
+    getOrg(org: String!): SportOrg
+    findBuddy(text: String!): SearchFieldsResultObject
+    getClubs: [Club]
+    getClubsByString(orgId: String!): [Club]
+    getClub(clubId: String!): Club
+}
+
+type Subscription {
+    newSportsBuddy: Sportbuddy!
+}
+
+type Mutation {
+    createSportbuddy(createSportbuddyInput: CreateSportbuddyInput!): Sportbuddy!
+    loginSportsBuddy(loginSportsBuddyInput: LoginSportsBuddyInput!): Sportbuddy!
+    logoutSportsBuddy: SportBuddyResponse
+    rtSportsBuddy: Sportbuddy
+    updateSportbuddy(
+        updateSportbuddyInput: UpdateSportbuddyInput!
+    ): UpdatedSportsBuddy!
+    removeSportbuddy(id: Int!): Sportbuddy
+    followSportbuddy(followerId: String!, followedId: String!): Sportbuddy
+    unfollowSportbuddy(followerId: String!, followedId: String!): Sportbuddy
+    createClub(createClubInput: CreateClubInput!): CreatedClub
+    joinClub(clubId: String!): Club
+}

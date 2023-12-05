@@ -1,0 +1,201 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "linux-musl"]
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  isVerified Boolean  @default(false)
+
+  email         String   @unique
+  name          String
+  bio           String?  @default("")
+  profileName   String   @unique
+  hash          String
+  hashedRt      String?
+  userPhoto     String?
+  role          Role     @default(MEMBER)
+  eventsCreated Event[]  @relation(name: "eventCreatedBy")
+  rating        Decimal?
+
+  socketId        String?        @default("")
+  oldSocketId     String?        @default("")
+  website         String?        @default("")
+  igTag           String?        @default("")
+  ytTag           String?        @default("")
+  interests       Sport[]
+  achievments     Achievment[]
+  NotificationIn  Notification[] @relation(name: "notificationsIn")
+  NotificationOut Notification[] @relation(name: "notificationsOut")
+
+  eventsRequestingToJoin Event[] @relation(name: "usersRequestingToJoin")
+  followedBy             User[]  @relation("UserFollows")
+  following              User[]  @relation("UserFollows")
+
+  usersOrganization Organization? @relation(fields: [organizationId], references: [id])
+  organizationId    String?
+  Event             Event[]
+  clubs             Club[]
+  Message           Message[]
+
+  @@map("sport_buddies")
+}
+
+model Achievment {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  achievmentPhoto       String
+  achievmentDescription String
+  achievmentName        String
+  User                  User?   @relation(fields: [userId], references: [id])
+  userId                String?
+
+  @@map("achievments")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  eventForUser Event?  @relation(fields: [eventId], references: [id])
+  eventId      String?
+
+  userAwaiting User?   @relation(fields: [notifUserId], references: [id], name: "notificationsOut")
+  notifUserId  String?
+
+  userAwaitingIn User?   @relation(fields: [notifUserInId], references: [id], name: "notificationsIn")
+  notifUserInId  String?
+
+  @@map("notifications")
+}
+
+model Organization {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  isVerified Boolean  @default(false)
+
+  email       String  @unique
+  name        String
+  bio         String? @default("")
+  profileName String  @unique
+  hash        String
+  hashedRt    String?
+  userPhoto   String?
+  role        String  @default("ORG")
+
+  socketId String @default("")
+
+  orgCreatedEvent   Event[] @relation(name: "orgCreatedEvent")
+  orgSubmitedEvents Event[] @relation(name: "orgSubmitedEvents")
+  Users             User[]
+  clubs             Club[]
+
+  @@map("organizations")
+}
+
+model Event {
+  id             String          @id @default(uuid())
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  createdBy      User?           @relation(fields: [userId], references: [id], name: "eventCreatedBy")
+  userId         String?
+  sport          Sport           @relation(fields: [sportId], references: [id])
+  sportId        String
+  location       Location        @relation(fields: [locationId], references: [id])
+  locationId     String
+  maxPpl         Int
+  time           String
+  date           String
+  isOpen         Boolean
+  hasFinished    Boolean?        @default(false)
+  isPaid         Boolean
+  EventAdditions EventAdditions?
+  numVisited     Int             @default(0)
+  messages       Message[]
+
+  usersRequestingToJoin  User[]  @relation(name: "usersRequestingToJoin")
+  userRequestingToJoinId String? @unique
+
+  submitedBy Organization? @relation(fields: [orgUserId], references: [id], name: "orgSubmitedEvents")
+  orgUserId  String?
+
+  Organization   Organization? @relation(fields: [organizationId], references: [id], name: "orgCreatedEvent")
+  organizationId String?
+
+  club         Club?          @relation(fields: [clubId], references: [id], name: "clubEvent")
+  clubId       String?
+  User         User[]
+  Notification Notification[]
+
+  @@map("events")
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  text    String
+  sentBy  User?   @relation(fields: [userId], references: [id])
+  Event   Event?  @relation(fields: [eventId], references: [id])
+  eventId String?
+  userId  String?
+}
+
+model EventAdditions {
+  id              String @id @default(uuid())
+  description     String
+  nameOfTheEvent  String
+  eventCoverPhoto String
+  event           Event  @relation(fields: [eventId], references: [id])
+  eventId         String @unique
+}
+
+model Location {
+  id        String  @id @default(uuid())
+  name      String
+  latitude  String
+  longitude String
+  event     Event[]
+}
+
+model Sport {
+  id     String  @id @default(uuid())
+  name   String
+  events Event[]
+  User   User[]
+
+  @@map("sports")
+}
+
+model Club {
+  id             String        @id @default(uuid())
+  name           String
+  desc           String
+  clubCoverPhoto String?
+  events         Event[]       @relation(name: "clubEvent")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String
+  users          User[]
+
+  @@map("clubs")
+}
+
+enum Role {
+  MEMBER
+  ADMIN
+  SUPERADMIN
+}
